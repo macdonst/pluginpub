@@ -1,9 +1,9 @@
 {
   "name": "pluginpub",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Publish new plugin version",
   "main": "distribution/cli.js",
-  "bin": "distribution/cli.js",
+  "bin": "bin/pluginpub",
   "engines": {
     "node": ">=4"
   },
