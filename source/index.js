@@ -63,6 +63,21 @@ const gitTasks = opts => {
 	return new Listr(tasks);
 };
 
+const pluginTasks = version => {
+	const tasks = [
+    {
+      title: 'Update plugin.xml',
+      task: () => updatePluginXml(version)
+    },
+    {
+      title: 'Stage plugin.xml',
+      task: () => exec('git', ['add', 'plugin.xml'])
+    }
+	];
+
+	return new Listr(tasks);
+};
+
 const updatePluginXml = (version) => {
   return new Promise(function(resolve, reject) {
     const parser = new xml2js.Parser();
@@ -136,8 +151,8 @@ module.exports = (input, opts) => {
 
 	tasks.add([
     {
-      title: 'Update plugin.xml',
-      task: () => updatePluginXml(input)
+      title: 'plugin.xml',
+      task: () => pluginTasks(input)
     },
     {
 			title: 'Bumping version',
