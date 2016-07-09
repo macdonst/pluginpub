@@ -64,6 +64,7 @@ const gitTasks = opts => {
 };
 
 const pluginTasks = version => {
+  const commitMsg = `Bumping plugin version to ${version}`;
 	const tasks = [
     {
       title: 'Update plugin.xml',
@@ -72,6 +73,10 @@ const pluginTasks = version => {
     {
       title: 'Stage plugin.xml',
       task: () => exec('git', ['add', 'plugin.xml'])
+    },
+    {
+      title: 'Commit plugin.xml',
+      task: () => exec('git', ['commit', '-m', commitMsg])
     }
 	];
 
