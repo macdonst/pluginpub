@@ -1,6 +1,6 @@
 {
   "name": "pluginpub",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Publish new plugin version",
   "main": "distribution/cli.js",
   "bin": "bin/pluginpub",

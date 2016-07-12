@@ -12,7 +12,7 @@ const xml2js = require('xml2js');
 const path = require('path');
 
 const fsP = pify(fs);
-const VERSIONS = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease'];
+let oldVersion = null;
 
 const exec = (cmd, args) => {
 	// Use `Observable` support if merged https://github.com/sindresorhus/execa/pull/26
@@ -95,6 +95,7 @@ const updatePluginXml = (version) => {
       };
 
       parser.parseString(data, function (err, result) {
+        oldVersion = result.plugin.$.version;
         result.plugin.$.version = version;
 
         const builder = new xml2js.Builder();
@@ -108,6 +109,71 @@ const updatePluginXml = (version) => {
           resolve();
         });
       });
+    });
+	});
+}
+
+const generateChangelog = version => {
+  console.log(oldVersion);
+  const commitMsg = `Updating CHANGELOG`;
+  const tasks = [
+    {
+      title: 'Update CHANGELOG.md',
+      task: () => updateChangelog(version)
+    },
+    {
+      title: 'Stage CHANGELOG.md',
+      task: () => exec('git', ['add', 'CHANGELOG.md'])
+    },
+    {
+      title: 'Commit CHANGELOG.md',
+      task: () => exec('git', ['commit', '-m', commitMsg])
+    },
+    {
+      title: 'Push CHANGELOG.md',
+      task: () => exec('git', ['push', 'origin', 'master'])
+    }
+  ];
+  return new Listr(tasks);
+}
+
+const updateChangelog = (version) => {
+  return new Promise(function(resolve, reject) {
+    const pluginPath = path.resolve('./');
+    console.log(pluginPath + '/CHANGELOG.md');
+    fs.readFile(pluginPath + '/CHANGELOG.md', 'utf-8', function(err, data) {
+      if (data) {
+        data = data.substring(data.indexOf('##'));
+      }
+
+      const fetchURL = "Fetch URL";
+      execa.stdout('git', ['remote', 'show', 'origin', '-n']).then(gitUrl => {
+        const begin = gitUrl.indexOf('Fetch URL: https://github.com/') + 30;
+        const end = gitUrl.indexOf('.git', begin);
+        const orgRepo = gitUrl.substring(begin, end);
+        const versions = `v${oldVersion}...v${version}`;
+        const prettyFormat = `--pretty=format:- %s [view commit](http://github.com/${orgRepo}/commit/%H)`;
+        execa.stdout('git', ['log', versions, prettyFormat]).then(result => {
+          const changelogData = `# Change Log
+
+## [v${version}](https://github.com/${orgRepo}/tree/v${version}) (2016-07-09)
+[Full Changelog](https://github.com/${orgRepo}/compare/${versions})
+
+${result}
+
+${data}`;
+          fs.writeFile('CHANGELOG.md', changelogData, function (err) {
+            if (err) {
+              console.error(err);
+              reject();
+            }
+            resolve();
+          });
+  			}).catch(error => {
+          console.error(err);
+          reject();
+        })
+			});
     });
 	});
 }
@@ -170,7 +236,13 @@ module.exports = (input, opts) => {
 		{
 			title: 'Pushing tags',
 			task: () => exec('git', ['push', '--follow-tags'])
-		}
+		},
+    {
+  		title: 'Generate CHANGELOG',
+  		task: function task() {
+  			return generateChangelog(input);
+  		}
+  	}
 	]);
 
 	return tasks.run()
