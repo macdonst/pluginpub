@@ -64,7 +64,7 @@ const gitTasks = opts => {
 };
 
 const pluginTasks = version => {
-  const commitMsg = `Bumping plugin version to ${version}`;
+  const commitMsg = `:bookmark: Bumping plugin version to ${version}`;
 	const tasks = [
     {
       title: 'Update plugin.xml',
