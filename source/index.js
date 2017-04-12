@@ -10,6 +10,7 @@ const Observable = require('any-observable');
 const streamToObservable = require('stream-to-observable');
 const xml2js = require('xml2js');
 const path = require('path');
+const dateFormat = require('dateformat');
 
 const fsP = pify(fs);
 let oldVersion = null;
@@ -153,10 +154,11 @@ const updateChangelog = (version) => {
         const orgRepo = gitUrl.substring(begin, end);
         const versions = `v${oldVersion}...v${version}`;
         const prettyFormat = `--pretty=format:- %s [view commit](http://github.com/${orgRepo}/commit/%H)`;
+				const today = dateFormat(new Date(), 'yyyy-MM-dd');
         execa.stdout('git', ['log', versions, prettyFormat]).then(result => {
           const changelogData = `# Change Log
 
-## [v${version}](https://github.com/${orgRepo}/tree/v${version}) (2016-07-09)
+## [v${version}](https://github.com/${orgRepo}/tree/v${version}) (${today})
 [Full Changelog](https://github.com/${orgRepo}/compare/${versions})
 
 ${result}
