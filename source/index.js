@@ -154,7 +154,7 @@ const updateChangelog = (version) => {
         const orgRepo = gitUrl.substring(begin, end);
         const versions = `v${oldVersion}...v${version}`;
         const prettyFormat = `--pretty=format:- %s [view commit](http://github.com/${orgRepo}/commit/%H)`;
-				const today = dateFormat(new Date(), 'yyyy-MM-dd');
+				const today = dateFormat(new Date(), 'yyyy-mm-dd');
         execa.stdout('git', ['log', versions, prettyFormat]).then(result => {
           const changelogData = `# Change Log
 
